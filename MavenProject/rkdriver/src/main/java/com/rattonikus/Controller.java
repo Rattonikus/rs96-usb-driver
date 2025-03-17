@@ -32,12 +32,10 @@ public class Controller {
         {
             for(Device device: list)
             {
+                //Unline when i do lsusb in linux, this returns vendor and product as a *short*, linux prints it out as a hex. 
                 DeviceDescriptor descriptor = new DeviceDescriptor(); 
                 result = LibUsb.getDeviceDescriptor(device, descriptor);
-                if (result != LibUsb.SUCCESS) throw new LibUsbException("Unable to read descriptor", result);
-                //if (descriptor.idVendor() == vendorId && descriptor.idProduct() == productId) return device;
-                return descriptor.iProduct();
-                
+                System.out.println("hhh" +  Integer.toHexString(descriptor.idProduct()) + "< PROD VEND >" + Integer.toHexString(descriptor.idVendor()));             
             }
         }
         finally

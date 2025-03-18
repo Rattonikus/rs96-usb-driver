@@ -1,5 +1,8 @@
 package com.rattonikus;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 import org.usb4java.*; 
 
 public class Controller {
@@ -13,8 +16,24 @@ public class Controller {
     {
         System.out.println("libusb starting");
         System.out.println(findAllDevice());
+        readVolume();
     }
     
+
+    private void readVolume()
+    {
+        try 
+        {
+            Process pb = new ProcessBuilder("wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@").start();
+            String pbOutput = new String(pb.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            
+            System.out.println("Output: " + pbOutput);
+        } 
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+    }
 
     private short findAllDevice()
     {
@@ -31,7 +50,7 @@ public class Controller {
         try 
         {
             for(Device device: list)
-            {
+            {        
                 //Unline when i do lsusb in linux, this returns vendor and product as a *short*, linux prints it out as a hex. 
                 DeviceDescriptor descriptor = new DeviceDescriptor(); 
                 result = LibUsb.getDeviceDescriptor(device, descriptor);
@@ -42,11 +61,15 @@ public class Controller {
         {
             LibUsb.freeDeviceList(list, true);
         }
-        return (Short) null; 
+
+        return 2;
+    
     }
     
 
-
+//    private String parsePipeWire()
+  //  {
+    //}
 
 
 
@@ -109,6 +132,4 @@ public class Controller {
         }
         return null; 
     }
-    
-
-}
+}  

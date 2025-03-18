@@ -11,7 +11,7 @@ public class Controller {
 
     public void start()
     {
-        System.out.println("hello world");
+        System.out.println("libusb starting");
         System.out.println(findAllDevice());
     }
     
@@ -35,7 +35,7 @@ public class Controller {
                 //Unline when i do lsusb in linux, this returns vendor and product as a *short*, linux prints it out as a hex. 
                 DeviceDescriptor descriptor = new DeviceDescriptor(); 
                 result = LibUsb.getDeviceDescriptor(device, descriptor);
-                System.out.println("hhh" +  Integer.toHexString(descriptor.idProduct()) + "< PROD VEND >" + Integer.toHexString(descriptor.idVendor()));             
+                System.out.println("Device " +  Integer.toHexString(descriptor.idProduct()) + "< PROD VEND >" + Integer.toHexString(descriptor.idVendor()));             
             }
         }
         finally

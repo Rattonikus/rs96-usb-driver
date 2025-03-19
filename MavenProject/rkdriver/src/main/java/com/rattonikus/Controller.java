@@ -2,6 +2,7 @@ package com.rattonikus;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HexFormat;
 
 import org.usb4java.*; 
 
@@ -14,8 +15,15 @@ public class Controller {
 
     public void start()
     {
-        System.out.println("libusb starting");
+
+        // 336 Keyb ProdID as short 9610 VendID as short
+
+        Short prodId = 336; 
+        Short VendID = 9610; 
+
         System.out.println(findAllDevice());
+        System.out.println("libusb starting");
+        handleTest(findDevice(VendID, prodId));
         readVolume();
     }
     
@@ -54,12 +62,13 @@ public class Controller {
                 //Unline when i do lsusb in linux, this returns vendor and product as a *short*, linux prints it out as a hex. 
                 DeviceDescriptor descriptor = new DeviceDescriptor(); 
                 result = LibUsb.getDeviceDescriptor(device, descriptor);
-                System.out.println("Device " +  Integer.toHexString(descriptor.idProduct()) + "< PROD VEND >" + Integer.toHexString(descriptor.idVendor()));             
+                
+                
+                System.out.println("Device " +  Integer.toHexString(descriptor.idProduct()) + " " + descriptor.idProduct() + "< PROD VEND >" + Integer.toHexString(descriptor.idVendor()) + " " + descriptor.idVendor());             
             }
         }
         finally
         {
-            LibUsb.freeDeviceList(list, true);
         }
 
         return 2;
@@ -92,6 +101,7 @@ public class Controller {
         Context context = new Context(); 
         int result = LibUsb.init(context);
         DeviceList list = new DeviceList();
+        
         int endresult = LibUsb.getDeviceList(context, list);
         for (Device device: list) {
             DeviceDescriptor descriptor = new DeviceDescriptor(); 
@@ -102,7 +112,28 @@ public class Controller {
     
     }
 
-    private Device findDevice()
+
+    private void handleTest(Device device)
+    {
+
+        DeviceHandle handle = new DeviceHandle(); 
+        int result = LibUsb.open(device, handle);
+        if (result != LibUsb.SUCCESS) throw new LibUsbException("unable to open deviceeee", result);
+
+
+        try 
+        {
+            int interfaceResult = LibUsb.claimInterface(handle, 1);
+            System.out.println("interface grabbed");
+        }
+        finally
+        {
+            LibUsb.close(handle);
+        }
+
+    }
+
+    private Device findDevice(short vendorId, short productId)
     {
 
         //read device list 
@@ -121,15 +152,15 @@ public class Controller {
                 DeviceDescriptor descriptor = new DeviceDescriptor(); 
                 result = LibUsb.getDeviceDescriptor(device, descriptor);
                 if (result != LibUsb.SUCCESS) throw new LibUsbException("Unable to read descriptor", result);
-                //if (descriptor.idVendor() == vendorId && descriptor.idProduct() == productId) return device;
+                if (descriptor.idVendor() == vendorId && descriptor.idProduct() == productId) return device;
                 return device;
-                
             }
         }
         finally
         {
-            LibUsb.freeDeviceList(list, true);
+            System.out.println("free");
         }
-        return null; 
+
+        return null;
     }
 }  
